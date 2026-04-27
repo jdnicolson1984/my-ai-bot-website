@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ridge Wilderness Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8f7f3;
+            color: #2c2b28;
+        }
+
+        /* Demo page content (just to show context) */
+        .demo-content {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 60px 24px;
+            text-align: center;
+        }
+
+        .demo-content h1 {
+            color: #1a3f1c;
+            margin-bottom: 16px;
+        }
+
+        /* ===== SELF-CONTAINED CHAT WIDGET ===== */
+        .chat-button {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background-color: #d4751e;
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 24px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.25);
+            z-index: 1000;
+            border: none;
+            transition: transform 0.2s;
+        }
+
+        .chat-button:hover {
+            transform: scale(1.08);
+            background-color: #b86210;
+        }
+
+        .chat-modal {
+            display: none;
+            position: fixed;
+            bottom: 90px;
+            right: 30px;
+            width: 320px;
+            height: 480px;
+            background: white;
+            border-radius: 12px;
+            z-index: 1001;
+            flex-direction: column;
+            overflow: hidden;
+            border: 1px solid #e0ddd5;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+
+        .chat-modal.active {
+            display: flex;
+        }
+
+        .modal-header {
+            background: #1a3f1c;
+            color: white;
+            padding: 10px 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        /* Chat messages area */
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            background: #fafafa;
+        }
+
+        .message {
+            max-width: 85%;
+            padding: 8px 12px;
+            border-radius: 16px;
+            font-size: 0.85rem;
+            line-height: 1.4;
+            word-wrap: break-word;
+        }
+
+        .message.user {
+            background: #d4751e;
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message.bot {
+            background: #e8e6df;
+            color: #2c2b28;
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+        }
+
+        /* Input area */
+        .chat-input-area {
+            display: flex;
+            padding: 10px;
+            border-top: 1px solid #e0ddd5;
+            background: white;
+            gap: 8px;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #d4d2ca;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            outline: none;
+        }
+
+        .chat-input:focus {
+            border-color: #d4751e;
+        }
+
+        .send-btn {
+            background: #1a3f1c;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 8px 16px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        .send-btn:hover {
+            background: #2c5f2d;
+        }
+
+        .typing {
+            color: #8a8882;
+            font-size: 0.75rem;
+            padding: 4px 12px;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-content">
+        <h1>Ridge Wilderness Adventures</h1>
+        <p>Demo of the embedded AI assistant — click the chat button to ask about programs, pricing, and policies.</p>
+    </div>
+
+    <!-- Chat Widget -->
+    <button class="chat-button" id="chatButton">💬</button>
+    <div class="chat-modal" id="chatModal">
+        <div class="modal-header">
+            <span>Ridge Assistant</span>
+            <button class="close-btn" id="closeModal">&times;</button>
+        </div>
+        <div class="chat-messages" id="chatMessages">
+            <div class="message bot">Hi! I can answer questions about our canoe courses, survival training, Duke of Edinburgh journeys, pricing, and policies. What would you like to know?</div>
+        </div>
+        <div class="chat-input-area">
+            <input type="text" class="chat-input" id="chatInput" placeholder="Ask me something...">
+            <button class="send-btn" id="sendBtn">Send</button>
+        </div>
+        <div id="typingIndicator" class="typing" style="display: none;">Ridge Assistant is typing...</div>
+    </div>
+
+    <script>
+        // FAQ data (from your original FAQ)
+        const FAQ = `Fraser Valley Expeditions - FAQ
+
+Q: What types of trips do you offer?
+A: We offer white water rafting (May-September), guided hiking tours (year-round), and kayaking (June-August).
+
+Q: Do I need experience to go rafting?
+A: No experience is needed for our Family Float trip (Class I-II rapids). Our Adventure Rafting trip (Class III-IV) requires previous rafting or kayaking experience.
+
+Q: What should I bring?
+A: Swimsuit, towel, sunscreen, water shoes or old sneakers. We provide wetsuits, helmets, and life jackets.
+
+Q: Is there an age minimum?
+A: Family Float: 5+ years. Adventure Rafting: 14+ years with guardian consent.
+
+Q: What's your cancellation policy?
+A: Cancel 7+ days before trip for full refund. 3-6 days: 50% refund. Within 48 hours: no refund. Weather cancellations are our call — you get full refund or reschedule.
+
+Q: How do I book?
+A: Visit our website at fvexpeditions.ca or call 604-555-RAFT.
+
+Q: Do you offer group discounts?
+A: Yes. Groups of 8+ get 15% off. Contact us for corporate or stagette packages.
+
+Q: What canoe courses do you offer?
+A: We offer Big Canoe Leader Course, Introduction to Solo Moving Water Canoeing, and private lessons.
+
+Q: What is the Survive + Thrive course?
+A: A 2-day wilderness survival course covering fire craft, shelter building, signaling, water purification, and survival mindset.
+
+Q: Do you offer Duke of Edinburgh journeys?
+A: Yes. Bronze, Silver, and Gold levels. Practice and qualifying journeys on Pitt Lake and Alouette Lake.
+
+Q: What's your phone number?
+A: 604-477-4663
+
+Q: What's your email?
+A: info@exploreridge.com`;
+
+        // Simple function to find answers (keyword matching from FAQ)
+        function getAnswer(question) {
+            const lowerQuestion = question.toLowerCase();
+            
+            // Check for keywords
+            if (lowerQuestion.includes('refund') || lowerQuestion.includes('cancellation') || lowerQuestion.includes('cancel')) {
+                return "Our cancellation policy is: cancel 7+ days before trip for full refund, 3-6 days for 50% refund, and within 48 hours for no refund. If we cancel due to weather, you'll get a full refund or can reschedule.";
+            }
+            if (lowerQuestion.includes('age') || lowerQuestion.includes('minimum')) {
+                return "Family Float: 5+ years. Adventure Rafting: 14+ years with guardian consent.";
+            }
+            if (lowerQuestion.includes('bring') || lowerQuestion.includes('wear') || lowerQuestion.includes('gear')) {
+                return "Bring a swimsuit, towel, sunscreen, and water shoes or old sneakers. We provide wetsuits, helmets, and life jackets.";
+            }
+            if (lowerQuestion.includes('raft') || lowerQuestion.includes('trip') || lowerQuestion.includes('offer')) {
+                return "We offer white water rafting (May-September), guided hiking tours (year-round), and kayaking (June-August).";
+            }
+            if (lowerQuestion.includes('experience') || lowerQuestion.includes('need experience')) {
+                return "No experience needed for Family Float trip. Adventure Rafting requires previous rafting or kayaking experience.";
+            }
+            if (lowerQuestion.includes('book') || lowerQuestion.includes('reserve') || lowerQuestion.includes('register')) {
+                return "Visit our website at fvexpeditions.ca or call 604-555-RAFT to book.";
+            }
+            if (lowerQuestion.includes('discount') || lowerQuestion.includes('group')) {
+                return "Yes. Groups of 8+ get 15% off. Contact us for corporate or stagette packages.";
+            }
+            if (lowerQuestion.includes('canoe')) {
+                return "We offer Big Canoe Leader Course, Introduction to Solo Moving Water Canoeing, and private lessons. Check our website for upcoming dates.";
+            }
+            if (lowerQuestion.includes('survive') || lowerQuestion.includes('thrive') || lowerQuestion.includes('survival')) {
+                return "Survive + Thrive is our 2-day wilderness survival course covering fire craft, shelter building, signaling, water purification, and survival mindset. Next course: May 30-31, 2026.";
+            }
+            if (lowerQuestion.includes('duke') || lowerQuestion.includes('edinburgh')) {
+                return "Yes, we offer Bronze, Silver, and Gold Duke of Edinburgh Adventurous Journeys on Pitt Lake and Alouette Lake. Contact us for dates.";
+            }
+            if (lowerQuestion.includes('phone') || lowerQuestion.includes('call')) {
+                return "You can reach us at 604-477-4663.";
+            }
+            if (lowerQuestion.includes('email')) {
+                return "Email us at info@exploreridge.com";
+            }
+            
+            return "I don't have that information. Please email info@exploreridge.com or call 604-477-4663.";
+        }
+
+        // DOM elements
+        const chatMessages = document.getElementById('chatMessages');
+        const chatInput = document.getElementById('chatInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const typingIndicator = document.getElementById('typingIndicator');
+
+        function addMessage(text, isUser) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user' : 'bot'}`;
+            messageDiv.textContent = text;
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function showTyping() {
+            typingIndicator.style.display = 'block';
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function hideTyping() {
+            typingIndicator.style.display = 'none';
+        }
+
+        async function sendMessage() {
+            const question = chatInput.value.trim();
+            if (!question) return;
+
+            // Add user message to chat
+            addMessage(question, true);
+            chatInput.value = '';
+            
+            // Show typing indicator
+            showTyping();
+            
+            // Simulate slight delay for realism
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            // Get answer from FAQ
+            const answer = getAnswer(question);
+            
+            // Hide typing indicator and add bot response
+            hideTyping();
+            addMessage(answer, false);
+        }
+
+        // Event listeners
+        sendBtn.addEventListener('click', sendMessage);
+        chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        // Chat modal open/close
+        const chatButton = document.getElementById('chatButton');
+        const chatModal = document.getElementById('chatModal');
+        const closeModal = document.getElementById('closeModal');
+
+        chatButton.addEventListener('click', () => {
+            chatModal.classList.toggle('active');
+        });
+
+        closeModal.addEventListener('click', () => {
+            chatModal.classList.remove('active');
+        });
+
+        window.addEventListener('click', (e) => {
+            if (e.target === chatModal) {
+                chatModal.classList.remove('active');
+            }
+        });
+    </script>
+</body>
+</html>
