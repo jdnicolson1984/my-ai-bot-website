@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Ridge Wilderness AI Assistant</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        /* Simulate their website content (replace this with your own) */
+        .content {
+            max-width: 800px;
+            background: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            color: #2c5f2d;
+            margin-bottom: 20px;
+        }
+
+        /* FLOATING CHAT BUTTON */
+        .chat-button {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background-color: #2c5f2d; /* Your brand color */
+            color: white;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+            transition: all 0.3s ease;
+            z-index: 1000;
+            font-size: 28px;
+            border: none;
+        }
+
+        .chat-button:hover {
+            transform: scale(1.08);
+            background-color: #1e4220;
+        }
+
+        /* MODAL WINDOW (The Chat Widget) */
+        .chat-modal {
+            display: none;
+            position: fixed;
+            bottom: 100px;
+            right: 30px;
+            width: 380px;
+            height: 600px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            z-index: 1001;
+            flex-direction: column;
+            overflow: hidden;
+            border: 1px solid #e0e0e0;
+        }
+
+        .chat-modal.active {
+            display: flex;
+        }
+
+        .modal-header {
+            background: #2c5f2d;
+            color: white;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .modal-iframe {
+            flex: 1;
+            width: 100%;
+            border: none;
+        }
+
+        @media (max-width: 500px) {
+            .chat-modal {
+                width: calc(100% - 40px);
+                right: 20px;
+                bottom: 80px;
+                height: 500px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="content">
+        <h1>Wilderness Adventures & Training</h1>
+        <p>This is a demo page for Ridge Wilderness Adventures. You can replace this text and design with your own content that mirrors their services, such as canoe lessons, first aid training, and wilderness survival courses.</p>
+        <p>Your custom AI assistant is available in the bottom right corner to answer questions about programs, prerequisites, pricing, and more.</p>
+    </div>
+
+    <!-- Floating Button -->
+    <button class="chat-button" id="chatButton">💬</button>
+
+    <!-- Modal Widget -->
+    <div class="chat-modal" id="chatModal">
+        <div class="modal-header">
+            <span>Ridge Wilderness Assistant</span>
+            <button class="close-btn" id="closeModal">&times;</button>
+        </div>
+        <iframe class="modal-iframe" src="https://YOUR_USERNAME-fv-expeditions-bot.hf.space?__theme=light"></iframe>
+    </div>
+
+    <script>
+        const chatButton = document.getElementById('chatButton');
+        const chatModal = document.getElementById('chatModal');
+        const closeModal = document.getElementById('closeModal');
+
+        chatButton.addEventListener('click', () => {
+            chatModal.classList.toggle('active');
+        });
+
+        closeModal.addEventListener('click', () => {
+            chatModal.classList.remove('active');
+        });
+
+        // Optional: Close modal when clicking outside of it (on the background overlay)
+        window.addEventListener('click', (event) => {
+            if (event.target === chatModal) {
+                chatModal.classList.remove('active');
+            }
+        });
+    </script>
+</body>
+</html>
