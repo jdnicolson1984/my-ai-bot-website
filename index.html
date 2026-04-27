@@ -4,7 +4,6 @@
     <title>Fraser Valley Expeditions - AI Assistant</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script type="module" src="https://gradio.s3.us-west-2.amazonaws.com/5.9.0/gradio.js"></script>
     <style>
         body {
             font-family: system-ui, -apple-system, sans-serif;
@@ -26,9 +25,11 @@
             padding: 20px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
-        gradio-app {
-            display: block;
-            min-height: 500px;
+        iframe {
+            width: 100%;
+            height: 650px;
+            border: none;
+            border-radius: 8px;
         }
     </style>
 </head>
@@ -38,7 +39,11 @@
         <p>Ask me about rafting trips, requirements, pricing, and more!</p>
     </div>
     <div class="chat-container">
-        <gradio-app src="https://jdnicolson-fv-expeditions-bot.hf.space"></gradio-app>
+        <iframe 
+            src="https://YOUR_USERNAME-fv-expeditions-bot.hf.space?__theme=light"
+            frameborder="0"
+            allow="accelerometer; ambient-light-sensor; autoplay; battery; camera; document-domain; encrypted-media; fullscreen; geolocation; gyroscope; layout-animations; legacy-image-formats; magnetometer; microphone; midi; oversized-images; payment; picture-in-picture; publickey-credentials-get; sync-xhr; usb; vr; wake-lock; xr-spatial-tracking">
+        </iframe>
     </div>
 </body>
 </html>
